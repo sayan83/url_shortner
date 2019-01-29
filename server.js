@@ -59,6 +59,14 @@ app.post("/api/shorturl/new", function (req, res,done) {
   // res.json({greeting: 'hello API'});
 });
 
+app.get("/api/shorturl/:no", function(req, res, done){
+  url.findOne({short: req.params.no}, function(err, data){
+    if (err) done(err);
+    res.redirect(data.orig);
+    done(null, data)
+  });
+});
+
 
 app.listen(port, function () {
   console.log('Node.js listening ...');
