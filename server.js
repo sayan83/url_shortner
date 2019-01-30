@@ -3,7 +3,7 @@
 var express = require('express');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-
+var dns = require('dns');
 var cors = require('cors');
 
 var app = express();
@@ -41,6 +41,9 @@ app.post("/api/shorturl/new", function (req, res,done) {
   url.findOne({orig: orig_url}, function(err,data){
     if (err) done(err);
     if(data == null){
+      dns.lookup(orig_url, function(err,addresses,family){
+        if (err) res.send({"error": "invalid URL"});
+      else{
       var document= new url({short: count, orig: orig_url});
       document.save(function(err,data){
         if (err) done(err);
@@ -49,6 +52,8 @@ app.post("/api/shorturl/new", function (req, res,done) {
       res.send({original_url: orig_url, short_url: count});
       count++;
       done(null, data);
+      }
+      });
     }
     else
     {
@@ -62,8 +67,14 @@ app.post("/api/shorturl/new", function (req, res,done) {
 app.get("/api/shorturl/:no", function(req, res, done){
   url.findOne({short: req.params.no}, function(err, data){
     if (err) done(err);
+    if(data == null)
+    {
+      res.send({"error": "No short url found for given input"});
+    }
+    else{
     res.redirect(data.orig);
-    done(null, data)
+    done(null, data);
+    }
   });
 });
 
